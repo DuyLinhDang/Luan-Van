@@ -14,6 +14,7 @@
 ".\objects\usart.o"
 ".\objects\pwm.o"
 ".\objects\delay.o"
+".\objects\exit.o"
 --strict --scatter ".\Objects\03_pwm.sct"
 --summary_stderr --info summarysizes --map --xref --callgraph --symbols
 --info sizes --info totals --info unused --info veneers

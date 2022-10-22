@@ -29,3 +29,5 @@
 .\objects\io.o: ..\..\my_lib_std\function_h\stm32f10x_usart.h
 .\objects\io.o: ..\..\my_lib_std\function_h\stm32f10x_wwdg.h
 .\objects\io.o: ..\..\my_lib_std\function_h\misc.h
+.\objects\io.o: ..\..\my_lib_std\1_delay\delay.h
+.\objects\io.o: ..\..\my_lib_std\2_io\io.h

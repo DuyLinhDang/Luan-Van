@@ -30,3 +30,4 @@
 .\objects\delay.o: ..\..\my_lib_std\function_h\stm32f10x_usart.h
 .\objects\delay.o: ..\..\my_lib_std\function_h\stm32f10x_wwdg.h
 .\objects\delay.o: ..\..\my_lib_std\function_h\misc.h
+.\objects\delay.o: ..\..\my_lib_std\1_delay\delay.h

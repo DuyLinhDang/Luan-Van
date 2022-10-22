@@ -30,4 +30,5 @@
 .\objects\main.o: ..\..\my_lib_std\function_h\misc.h
 .\objects\main.o: ..\..\my_lib_std\2_io\io.h
 .\objects\main.o: ..\..\my_lib_std\1_delay\delay.h
-.\objects\main.o: ..\..\my_lib_std\6_PWM\pwm.h
+.\objects\main.o: ..\..\my_lib_std\2_io\io.h
+.\objects\main.o: ..\..\my_lib_std\5_exit\exit.h

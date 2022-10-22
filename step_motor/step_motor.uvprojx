@@ -373,7 +373,7 @@
               <MiscControls></MiscControls>
               <Define>STM32F10X_MD, USE_STDPERIPH_DRIVER</Define>
               <Undefine></Undefine>
-              <IncludePath>..\..\my_lib_std\src;..\..\my_lib_std\STM32F10x;..\..\my_lib_std\function_h;..\..\my_lib_std\CoreSupport;..\..\my_lib_std\function_h;..\..\my_lib_std\2_io;..\..\my_lib_std\1_delay;..\..\my_lib_std\6_PWM;..\..\my_lib_std\3_usart</IncludePath>
+              <IncludePath>..\..\my_lib_std\src;..\..\my_lib_std\STM32F10x;..\..\my_lib_std\function_h;..\..\my_lib_std\CoreSupport;..\..\my_lib_std\function_h;..\..\my_lib_std\2_io;..\..\my_lib_std\1_delay;..\..\my_lib_std\6_PWM;..\..\my_lib_std\3_usart;..\..\my_lib_std\5_exit</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -520,6 +520,11 @@
               <FileName>delay.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\my_lib_std\1_delay\delay.c</FilePath>
+            </File>
+            <File>
+              <FileName>exit.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\my_lib_std\5_exit\exit.c</FilePath>
             </File>
           </Files>
         </Group>

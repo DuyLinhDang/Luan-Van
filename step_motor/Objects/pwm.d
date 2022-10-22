@@ -30,5 +30,7 @@
 .\objects\pwm.o: ..\..\my_lib_std\function_h\stm32f10x_usart.h
 .\objects\pwm.o: ..\..\my_lib_std\function_h\stm32f10x_wwdg.h
 .\objects\pwm.o: ..\..\my_lib_std\function_h\misc.h
+.\objects\pwm.o: ..\..\my_lib_std\1_delay\delay.h
+.\objects\pwm.o: ..\..\my_lib_std\2_io\io.h
 .\objects\pwm.o: ..\..\my_lib_std\3_usart\usart.h
 .\objects\pwm.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdio.h
