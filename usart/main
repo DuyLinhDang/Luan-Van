@@ -1,0 +1,112 @@
+#include "io.h"
+#include "delay.h"
+#include "pwm.h"
+#include "timer.h"
+//thu vien c
+//#pragma import(__use_no_semihosting_swi)
+#pragma import (__ use_no_semihosting)
+#include "String.h"
+#include "stdlib.h"
+#include "stdint.h"
+#include "stdio.h"
+#include "cJSON.h"
+#include "usart.h"
+#define SizeData 200
+char RX_data[SizeData];
+u16 index1 = 0;
+void Clear_Data_RX();
+
+void USRAT1_PutChar(char data);
+void USRAT1_PutString(char *n);
+struct __FILE{
+	int dummy;
+};
+	//FILE __stdout;
+int fpuc(int ch, FILE *f){
+	while(!USART_GetFlagStatus(USART1,USART_FLAG_TC));
+	USART_SendData(USART1,(u8) ch);
+	return ch;
+}
+
+ // con tro json
+void XuLyJson(char *data3);
+u32 i;
+u16 a = 97;
+char z = 10;
+uint8_t flat = 0;
+int main(void){
+	
+	io_Set(GPIOC,GPIO_Pin_13,GPIO_Mode_Out_PP,GPIO_Speed_50MHz);
+	
+	USARTx_Init(USART1, Pins_PA9PA10, 9600);
+	USART_Puts(USART1,"hello/n");
+	while(1){
+		if(flat == 1){
+			XuLyJson(RX_data);
+			Clear_Data_RX();
+			flat = 0;
+		}
+	}
+}
+
+
+void USART1_IRQHandler(void) {
+	//Check if interrupt was because data is received
+	if (USART_GetITStatus(USART1, USART_IT_RXNE) != RESET) {
+		//res = USART1->DR;
+		//USART_Gets(USART1,RX_data,200);
+		//USRAT1_PutString(RX_data);
+		flat = 1;
+		
+	}
+	USART1->SR &= ~USART_FLAG_RXNE;
+}
+
+void USRAT1_PutChar(char data){
+	while(!USART_GetFlagStatus(USART1,USART_FLAG_TC));
+	USART_SendData(USART1,data);
+		//USART_SendData
+	
+}
+
+void USRAT1_PutString(char *n){
+	while(*n){
+		USRAT1_PutChar(*n++);
+	}
+}
+
+void Clear_Data_RX(){
+	u16 j=0;
+	for(j=0;j<SizeData;j++){
+		RX_data[j] = NULL;
+	}
+	index1 = 0;
+}
+
+void XuLyJson(char *data3){
+	//cJSON_Delete(DataJson);
+	cJSON* DataJson = cJSON_Parse(data3);// dua du vao dang json
+	//xu ly
+	if(cJSON_GetObjectItem(DataJson,"led1")){ // kiem tra xem co oject "led_on" hay khong
+		if(strstr(cJSON_GetObjectItem(DataJson,"led1")->valuestring,"0")){
+			//led off
+			GPIO_SetBits(GPIOC,GPIO_Pin_13);
+			printf("off");
+		}
+		else if(strstr(cJSON_GetObjectItem(DataJson,"led1")->valuestring,"1")){
+			//led on
+			GPIO_ResetBits(GPIOC,GPIO_Pin_13);
+			printf("on");
+		}
+		
+	}
+	else if(cJSON_GetObjectItem(DataJson,"led2")){
+		
+	}
+	
+	
+	//xu ly xong xoa du lieu
+	cJSON_Delete(DataJson);
+	
+}
+

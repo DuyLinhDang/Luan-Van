@@ -30,5 +30,9 @@
 .\objects\main.o: ..\..\my_lib_std\function_h\misc.h
 .\objects\main.o: ..\..\my_lib_std\2_io\io.h
 .\objects\main.o: ..\..\my_lib_std\1_delay\delay.h
-.\objects\main.o: ..\..\my_lib_std\2_io\io.h
 .\objects\main.o: ..\..\my_lib_std\5_exit\exit.h
+.\objects\main.o: .\lib\usart\usart.h
+.\objects\main.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdio.h
+.\objects\main.o: .\lib\cjson\cJSON.h
+.\objects\main.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stddef.h
+.\objects\main.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\String.h

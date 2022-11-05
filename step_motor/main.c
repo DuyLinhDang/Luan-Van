@@ -7,7 +7,9 @@
 #include "io.h"
 #include "delay.h"
 #include "exit.h"
-
+#include "usart.h"
+#include "cJSON.h"
+#include <String.h>
 //#define STEP0 PAout(3) // define pin step out
 //#define DIR0 	PAout(2) // define pin DIR out
 
@@ -24,12 +26,16 @@
 //define gpio output for step B-axis
 #define DirB 		GPIO_Pin_6
 #define StepB 	GPIO_Pin_7
+//define gpio out MS1 for Z axis
+#define MS1_Z 	GPIO_Pin_8
 
-//define gpio exit
+//define gpio exit for GPIO B
 #define Exit_X	GPIO_Pin_0
 #define Exit_Y	GPIO_Pin_1
 #define Exit_Z	GPIO_Pin_3
 #define Exit_B	GPIO_Pin_4
+//define gpio output reverse for GPIO B
+
 
 //define chieu quay dong co step
 #define CW  	0  //xoay thuan
@@ -41,12 +47,14 @@
 #define Midium		500
 #define Fast			200
 
+#define RxBufferSize 	200  
+#define TxBufferSize 	200
 //***************************init variable*************************************
 //define distance X-axis, Y-axis, Z-axis, B-axis
-const uint32_t distance_X 			= 2000; //khoang cach truc X, tinh theo so vong
-const uint32_t distance_Y				= 2000; //khoang cach truc Y, tinh theo so vong
-const uint32_t distance_Z1			= 2000; //khoang cach truc Z1, part 1, tinh theo so vong
-const uint32_t distance_Z2			= 2000; //khoang cach truc Z2, part 2, tinh theo so vong
+const uint32_t distance_X 			= 20000; //khoang cach truc X, tinh theo so vong
+const uint32_t distance_Y				= 20000; //khoang cach truc Y, tinh theo so vong
+const uint32_t distance_Z1			= 10000; //khoang cach truc Z1, part 1, tinh theo so vong
+const uint32_t distance_Z2			= 5000; //khoang cach truc Z2, part 2, tinh theo so vong
 const uint32_t distance_B				= 2000; //khoang cach truc B, tinh theo so vong
 const uint32_t distance_drop		= 200*8*2; //khoang cach Z1 slow, tinh theo so vong,0.4cm
 
@@ -81,6 +89,15 @@ uint8_t stop_Z_pipet 	= 0;
 //define variable number water need to drop
 // get value to usart
 uint16_t water_drop_number 	= 0;
+// define value for usart
+
+char TxBuffer[TxBufferSize] = "USART1 Interrupt";
+char RxBuffer[RxBufferSize] = "";
+char data_RX = NULL;
+__IO uint8_t RxCounter = 0x00;
+uint8_t flat_excute_json = 0;
+cJSON* DataJson;
+
 
 //***************************function*************************************
 //function set home for system
@@ -93,22 +110,59 @@ void take_water(void);
 void drop_water(void);
 //function triger for PC to image excution
 void triger_image_excution(void);
-
-
+//function select GPIO PB3 is input
+void select_pin_special_PB3();
+//function to handle cjon
+void cJSON_handler(char *data);
+//function to clear data RX
+void Clear_Data_RX();
 //void step(int step_number, int dir);
 
 int main(void){
 	//init delay
 	delay_init();
-	//init port output for step motor (pin A0-A7)
-	io_Set(GPIOA, StepX | DirX | StepY | DirY | StepZ | DirZ |StepB | DirB,GPIO_Mode_Out_PP,GPIO_Speed_50MHz);
-	
+	//int usart
+	USARTx_Init(USART1,Pins_PA9PA10,9600);
+	io_Set(GPIOC,GPIO_Pin_13,GPIO_Mode_Out_PP,GPIO_Speed_50MHz);
+	//init port output for step motor (pin A0-A8) 
+	io_Set(GPIOA, StepX | DirX | StepY | DirY | StepZ | DirZ |StepB | DirB | MS1_Z,GPIO_Mode_Out_PP,GPIO_Speed_50MHz);
+	//set MS1_Z is low
+	GPIO_ResetBits(GPIOA,MS1_Z);
 	//init port input interrupt (pin B0 B1 B3)
-	exit_Init(GPIOB, GPIO_Pin_0 | GPIO_Pin_1 | GPIO_Pin_3, Trigger_Rising);
-	
+	exit_Init(GPIOB, GPIO_Pin_0, Trigger_Falling);
+	exit_Init(GPIOB, GPIO_Pin_1, Trigger_Falling);
+	select_pin_special_PB3();
+	exit_Init(GPIOB, GPIO_Pin_3, Trigger_Falling);
 	//init port input interrupt to call function home
-	exit_Init(GPIOB, GPIO_Pin_4, Trigger_Rising);
-	home();
+	exit_Init(GPIOB, GPIO_Pin_4, Trigger_Falling);
+	//interrupt reverse
+	exit_Init(GPIOB, GPIO_Pin_5, Trigger_Falling);
+	exit_Init(GPIOB, GPIO_Pin_6, Trigger_Falling);
+//	home();
+//	take_water();
+	//drop_water();
+	
+	//step_motor(GPIOA,StepB,DirB,CCW,Slowest,1600*30);
+	USART_Puts(USART1,"hello");
+	while(1)
+	{
+		if(flat_excute_json==1){
+//			call function cjson handler
+			cJSON_handler(RxBuffer);
+			//clear flat_excute_json
+			flat_excute_json = 0;		
+		}
+//		step_motor(GPIOA,StepY,DirY,CCW,Midium,800);
+//		step_motor(GPIOA,StepZ,DirZ,CCW,Midium,800);
+//		step_motor(GPIOA,StepX,DirX,CCW,Midium,800);
+//		step_motor(GPIOA,StepB,DirB,CCW,Midium,1600);
+//		delay(1000);
+//		step_motor(GPIOA,StepY,DirY,CW,Midium,800);
+//		step_motor(GPIOA,StepZ,DirZ,CW,Midium,800);
+//		step_motor(GPIOA,StepX,DirX,CW,Midium,800);
+//		step_motor(GPIOA,StepB,DirB,CW,Midium,1600);
+//		delay(1000);
+	}
 	//
 //	while(1)
 //	{
@@ -265,14 +319,17 @@ void drop_water(void)
 	//add value to stepB_number
 	stepB_number += distance_B;
 	
+	//set MS1_Z to high
+	GPIO_SetBits(GPIOA,MS1_Z);
 	// run down part 2, go slow, distance_go_down_slow_to_drop
-	step_motor(GPIOA, StepZ, DirZ, CW, Slowest, distance_slow_to_drop_water);
+	step_motor(GPIOA, StepZ, DirZ, CW, Slowest, distance_slow_to_drop_water*8);
 	//add distance to stepZ_number
 	stepZ_number += distance_slow_to_drop_water;
 	
 	//time delay when drop water
-	delay_ms(200);
-	
+	delay_ms(600);
+	//set MS1_Z to low
+	GPIO_ResetBits(GPIOA,MS1_Z);
 	// run up part 1, go slow, distance_go_up_slow_to_out
 	step_motor(GPIOA, StepZ, DirZ, CCW, Slow, distance_slow_to_drop_water);
 	//sub value to stepZ_number
@@ -296,7 +353,7 @@ void triger_image_excution(void)
 //*************************************function interrupt to call function home***********************************************
 void EXTI9_5_IRQHandler(void)
 {
-	/* Make sure that interrupt flag is set */
+	/* Make sure that interrupt flag is set for line 5 */
 	if (EXTI_GetITStatus(EXTI_Line5) != RESET)
 		{
 		//set flat to interrupt for function home
@@ -304,5 +361,66 @@ void EXTI9_5_IRQHandler(void)
 		//call function home
 		EXTI_ClearFlag(EXTI_Line5);
 		}
+		/* Make sure that interrupt flag is set for line 6 */
+		if (EXTI_GetITStatus(EXTI_Line6) != RESET)
+		{
+			
+		EXTI_ClearFlag(EXTI_Line6);
+		}
 }
+//*************************************function select pin to gpio***********************************************
+void select_pin_special_PB3()
+{
+	GPIO_InitTypeDef  GPIO_InitStructure;
+	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOB,ENABLE);//Enable porta, porte clock
+	RCC_APB2PeriphClockCmd(RCC_APB2Periph_AFIO,ENABLE);    //Enable multiplex function clock
+	GPIO_PinRemapConfig(GPIO_Remap_SWJ_JTAGDisable, ENABLE );
 
+	GPIO_InitStructure.GPIO_Pin  = GPIO_Pin_3;
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IPU; 
+	GPIO_Init(GPIOB, &GPIO_InitStructure);
+}
+//*************************************function usart interrupt***********************************************
+void USART1_IRQHandler(void)
+{
+  if(USART_GetITStatus(USART1, USART_IT_RXNE) != RESET)
+  {
+    /* Read one byte from the receive data register */
+     data_RX = USART_ReceiveData(USART1);
+		if(data_RX != '\n') RxBuffer[RxCounter++] = data_RX;
+		else{
+		// set flat to call function handle json
+		flat_excute_json = 1;
+				}
+		}
+	}
+//************************************function handle json when it has interrupt********************************
+void cJSON_handler(char *data){
+	//add dato to format json
+	DataJson = cJSON_Parse(data);
+	if(cJSON_GetObjectItem(DataJson,"led1")){ // kiem tra xem co oject "led_on" hay khong
+		if(strstr(cJSON_GetObjectItem(DataJson,"led1")->valuestring,"0")){
+			//led off
+			GPIO_SetBits(GPIOC,GPIO_Pin_13);
+			printf("off");
+		}
+		else if(strstr(cJSON_GetObjectItem(DataJson,"led1")->valuestring,"1")){
+			//led on
+			GPIO_ResetBits(GPIOC,GPIO_Pin_13);
+			printf("on");
+		}
+	}
+	//clear data json
+	cJSON_Delete(DataJson);
+	//clear data RX
+	Clear_Data_RX();
+}
+//***************************function to clear data RX
+void Clear_Data_RX(){
+	u16 j=0;
+	for(j=0;j<RxBufferSize;j++){
+		RxBuffer[j] = NULL;
+	}
+	RxCounter = 0;
+}

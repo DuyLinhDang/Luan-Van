@@ -1,5 +1,5 @@
-.\objects\usart.o: ..\..\my_lib_std\3_usart\usart.c
-.\objects\usart.o: ..\..\my_lib_std\3_usart\usart.h
+.\objects\usart.o: lib\usart\usart.c
+.\objects\usart.o: lib\usart\usart.h
 .\objects\usart.o: ..\..\my_lib_std\function_h\misc.h
 .\objects\usart.o: ..\..\my_lib_std\STM32F10x\stm32f10x.h
 .\objects\usart.o: ..\..\my_lib_std\CoreSupport\core_cm3.h
