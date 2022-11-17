@@ -373,7 +373,7 @@
               <MiscControls></MiscControls>
               <Define>STM32F10X_MD, USE_STDPERIPH_DRIVER</Define>
               <Undefine></Undefine>
-              <IncludePath>..\..\my_lib_std\src;..\..\my_lib_std\STM32F10x;..\..\my_lib_std\function_h;..\..\my_lib_std\CoreSupport;..\..\my_lib_std\function_h;..\..\my_lib_std\2_io;..\..\my_lib_std\1_delay;..\..\my_lib_std\6_PWM;..\..\my_lib_std\3_usart;..\..\my_lib_std\5_exit</IncludePath>
+              <IncludePath>..\..\my_lib_std\src;..\..\my_lib_std\STM32F10x;..\..\my_lib_std\function_h;..\..\my_lib_std\CoreSupport;..\..\my_lib_std\function_h;..\..\my_lib_std\2_io;..\..\my_lib_std\1_delay;..\..\my_lib_std\6_PWM;..\..\my_lib_std\5_exit;.\lib\usart;.\lib\cjson;..\..\my_lib_std\10_Flash</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -486,6 +486,11 @@
               <FileType>1</FileType>
               <FilePath>..\..\my_lib_std\function_c\stm32f10x_tim.c</FilePath>
             </File>
+            <File>
+              <FileName>stm32f10x_flash.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\std_en.stsw-stm32054_v3.5.0\STM32F10x_StdPeriph_Lib_V3.5.0\Libraries\STM32F10x_StdPeriph_Driver\src\stm32f10x_flash.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -507,16 +512,6 @@
               <FilePath>..\..\my_lib_std\2_io\io.c</FilePath>
             </File>
             <File>
-              <FileName>usart.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\my_lib_std\3_usart\usart.c</FilePath>
-            </File>
-            <File>
-              <FileName>pwm.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\my_lib_std\6_PWM\pwm.c</FilePath>
-            </File>
-            <File>
               <FileName>delay.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\my_lib_std\1_delay\delay.c</FilePath>
@@ -525,6 +520,21 @@
               <FileName>exit.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\my_lib_std\5_exit\exit.c</FilePath>
+            </File>
+            <File>
+              <FileName>usart.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\lib\usart\usart.c</FilePath>
+            </File>
+            <File>
+              <FileName>cJSON.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\lib\cjson\cJSON.c</FilePath>
+            </File>
+            <File>
+              <FileName>myFlash.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\my_lib_std\10_Flash\myFlash.c</FilePath>
             </File>
           </Files>
         </Group>

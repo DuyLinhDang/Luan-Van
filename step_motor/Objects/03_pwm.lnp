@@ -9,13 +9,14 @@
 ".\objects\stm32f10x_rcc.o"
 ".\objects\stm32f10x_usart.o"
 ".\objects\stm32f10x_tim.o"
+".\objects\stm32f10x_flash.o"
 ".\objects\core_cm3.o"
 ".\objects\io.o"
-".\objects\pwm.o"
 ".\objects\delay.o"
 ".\objects\exit.o"
 ".\objects\usart.o"
 ".\objects\cjson.o"
+".\objects\myflash.o"
 --strict --scatter ".\Objects\03_pwm.sct"
 --summary_stderr --info summarysizes --map --xref --callgraph --symbols
 --info sizes --info totals --info unused --info veneers

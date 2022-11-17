@@ -9,7 +9,11 @@
 #include "exit.h"
 #include "usart.h"
 #include "cJSON.h"
+#include "stm32f10x_flash.h"
+#include "myFlash.h"
 #include <String.h>
+#include <stdlib.h>
+
 //#define STEP0 PAout(3) // define pin step out
 //#define DIR0 	PAout(2) // define pin DIR out
 
@@ -95,9 +99,27 @@ char TxBuffer[TxBufferSize] = "USART1 Interrupt";
 char RxBuffer[RxBufferSize] = "";
 char data_RX = NULL;
 __IO uint8_t RxCounter = 0x00;
-uint8_t flat_excute_json = 0;
+extern uint8_t flat_excute_json;
+//define json for each data
+char JSON[100];
 cJSON* DataJson;
+cJSON* HomeJson;
+cJSON* ImgJson;
+cJSON* NumberDropJson;
+cJSON* CheckErrorJson;
+cJSON* DistanceJson;
+//define variable for Json
+char str_homeJson[10];
+char str_imgJson[10];
+char str_numberDropJson[10];
+char str_checkErrorJson[50];
+char str_distanceJson[10];
 
+char homeJson[10];
+char imgJson[10];
+uint8_t numberDropJson = 0;
+char checkErrorJson[50];
+uint16_t distanceJson = 0;
 
 //***************************function*************************************
 //function set home for system
@@ -113,10 +135,11 @@ void triger_image_excution(void);
 //function select GPIO PB3 is input
 void select_pin_special_PB3();
 //function to handle cjon
-void cJSON_handler(char *data);
+extern void cJSON_handler(char *data);
 //function to clear data RX
 void Clear_Data_RX();
 //void step(int step_number, int dir);
+void sendData();
 
 int main(void){
 	//init delay
@@ -141,9 +164,21 @@ int main(void){
 //	home();
 //	take_water();
 	//drop_water();
-	
-	//step_motor(GPIOA,StepB,DirB,CCW,Slowest,1600*30);
+	flat_excute_json = 0;
+	homeJson[0] = 'O';
+	homeJson[1] = 'N';
+	imgJson[0] = 'O';
+	imgJson[1] = 'N';
+	numberDropJson = 10;
+	checkErrorJson[0] = 'O';
+	checkErrorJson[1] = 'K';
+	distanceJson = 20;
+	//GPIO_SetBits(GPIOA,MS1_Z);
+	//step_motor(GPIOA,StepZ,DirZ,CCW,60000,1600*10);
+	//GPIO_ResetBits(GPIOA,MS1_Z);
 	USART_Puts(USART1,"hello");
+	sendData();
+	
 	while(1)
 	{
 		if(flat_excute_json==1){
@@ -398,18 +433,76 @@ void USART1_IRQHandler(void)
 //************************************function handle json when it has interrupt********************************
 void cJSON_handler(char *data){
 	//add dato to format json
+	int a = 0;
 	DataJson = cJSON_Parse(data);
-	if(cJSON_GetObjectItem(DataJson,"led1")){ // kiem tra xem co oject "led_on" hay khong
-		if(strstr(cJSON_GetObjectItem(DataJson,"led1")->valuestring,"0")){
-			//led off
-			GPIO_SetBits(GPIOC,GPIO_Pin_13);
-			printf("off");
+	// get object json
+	HomeJson 				= cJSON_GetObjectItem(DataJson,"Home");
+	ImgJson 				= cJSON_GetObjectItem(DataJson,"Img");
+	NumberDropJson 	= cJSON_GetObjectItem(DataJson,"NumberDrop");
+	DistanceJson 		= cJSON_GetObjectItem(DataJson,"Distance");
+	CheckErrorJson 	= cJSON_GetObjectItem(DataJson,"CheckError");
+	// handler json
+	//home
+	if(HomeJson==NULL){
+		//do something
+		a = 1;
+	}
+	else{
+	if(strstr(HomeJson->valuestring,"ON")){
+		NVIC_SystemReset();
+		//home();
 		}
-		else if(strstr(cJSON_GetObjectItem(DataJson,"led1")->valuestring,"1")){
-			//led on
-			GPIO_ResetBits(GPIOC,GPIO_Pin_13);
-			printf("on");
+		else{ // "OFF"
+			//do something
+			a = 1;
 		}
+	}
+	//Img
+		if(ImgJson==NULL){
+		//do something
+			a = 1;
+	}
+	else{
+		if(strstr(ImgJson->valuestring,"ON")){
+			//do something
+			a = 1;
+			
+		}
+		else{ // "OFF"
+			//do something
+			a = 1;
+		}
+	}
+	//CheckError
+	if(CheckErrorJson==NULL){
+		//do something
+		a = 1;
+	}
+	else{
+		if(strstr(CheckErrorJson->valuestring,"da_truyen_thanh_cong")){
+			//do something
+			a = 1;
+		}
+		else{ // truyen error
+			//do something
+			a = 1;
+		}
+	}
+	//Number drop
+	if(NumberDropJson==NULL){
+		//do something
+		a = 1;
+	}
+	else{
+		numberDropJson = NumberDropJson->valuedouble;
+	}
+	//Number drop
+	if(DistanceJson==NULL){
+		//do something
+		a = 1;
+	}
+	else{
+		distanceJson = DistanceJson->valuedouble;
 	}
 	//clear data json
 	cJSON_Delete(DataJson);
@@ -423,4 +516,46 @@ void Clear_Data_RX(){
 		RxBuffer[j] = NULL;
 	}
 	RxCounter = 0;
+}
+
+void sendData(){
+//	clear data in char
+	int i = 0;
+	for(i=0;i<10;i++){
+		str_homeJson[i] = 0;
+		str_imgJson[i] = 0;
+		str_numberDropJson[i] = 0;
+		str_distanceJson[i] = 0;
+	}
+	for(i=0;i<50;i++){
+		str_checkErrorJson[i] = 0;
+	}
+	//save data to aray
+	sprintf(str_homeJson,"%s",homeJson);
+	sprintf(str_imgJson,"%s",imgJson);
+	sprintf(str_numberDropJson,"%d",numberDropJson);
+	sprintf(str_distanceJson,"%d",distanceJson);
+	sprintf(str_checkErrorJson,"%s",checkErrorJson);
+	//mix string 
+	//home
+	strcat(JSON,"{\"Home\":\"");
+	strcat(JSON,str_homeJson);
+	strcat(JSON,"\",");
+	//Img
+	strcat(JSON,"\"Img\":\"");
+	strcat(JSON,str_imgJson);
+	strcat(JSON,"\",");
+	//number drop
+	strcat(JSON,"\"NumberDrop\":");
+	strcat(JSON,str_numberDropJson);
+	strcat(JSON,",");
+	//Distance
+	strcat(JSON,"\"Distance\":");
+	strcat(JSON,str_distanceJson);
+	strcat(JSON,",");
+	//check error
+	strcat(JSON,"\"CheckError\":\"");
+	strcat(JSON,str_checkErrorJson);
+	strcat(JSON,"\"}");
+	printf("%s\n",JSON);
 }

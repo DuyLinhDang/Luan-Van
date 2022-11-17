@@ -35,4 +35,6 @@
 .\objects\main.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdio.h
 .\objects\main.o: .\lib\cjson\cJSON.h
 .\objects\main.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stddef.h
+.\objects\main.o: ..\..\my_lib_std\10_Flash\myFlash.h
 .\objects\main.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\String.h
+.\objects\main.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdlib.h
