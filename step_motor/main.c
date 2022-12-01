@@ -55,12 +55,12 @@
 #define TxBufferSize 	200
 //***************************init variable*************************************
 //define distance X-axis, Y-axis, Z-axis, B-axis
-const uint32_t distance_X 			= 20000; //khoang cach truc X, tinh theo so vong
-const uint32_t distance_Y				= 20000; //khoang cach truc Y, tinh theo so vong
-const uint32_t distance_Z1			= 10000; //khoang cach truc Z1, part 1, tinh theo so vong
-const uint32_t distance_Z2			= 5000; //khoang cach truc Z2, part 2, tinh theo so vong
-const uint32_t distance_B				= 2000; //khoang cach truc B, tinh theo so vong
-const uint32_t distance_drop		= 200*8*2; //khoang cach Z1 slow, tinh theo so vong,0.4cm
+const uint32_t distance_X 			= 1600*2; //khoang cach truc X, tinh theo so vong
+const uint32_t distance_Y				= 1600*3; //khoang cach truc Y, tinh theo so vong
+const uint32_t distance_Z1			= 1600*3; //khoang cach truc Z1, part 1, tinh theo so vong
+const uint32_t distance_Z2			= 1600*2; //khoang cach truc Z2, part 2, tinh theo so vong
+const uint32_t distance_B				= 160*2; //khoang cach truc B, tinh theo so vong
+const uint32_t distance_drop		= 160*2; //khoang cach Z1 slow, tinh theo so vong,0.4cm
 
 // define avariabe to remerber number step of X-axis
 uint32_t stepX_number 	= 0;
@@ -99,7 +99,7 @@ char TxBuffer[TxBufferSize] = "USART1 Interrupt";
 char RxBuffer[RxBufferSize] = "";
 char data_RX = NULL;
 __IO uint8_t RxCounter = 0x00;
-extern uint8_t flat_excute_json;
+uint8_t flat_excute_json;
 //define json for each data
 char JSON[100];
 cJSON* DataJson;
@@ -152,12 +152,12 @@ int main(void){
 	//set MS1_Z is low
 	GPIO_ResetBits(GPIOA,MS1_Z);
 	//init port input interrupt (pin B0 B1 B3)
-	exit_Init(GPIOB, GPIO_Pin_0, Trigger_Falling);
-	exit_Init(GPIOB, GPIO_Pin_1, Trigger_Falling);
+	exit_Init(GPIOB, GPIO_Pin_0, Trigger_Rising);
+	exit_Init(GPIOB, GPIO_Pin_1, Trigger_Rising);
 	select_pin_special_PB3();
-	exit_Init(GPIOB, GPIO_Pin_3, Trigger_Falling);
+	exit_Init(GPIOB, GPIO_Pin_3, Trigger_Rising);
 	//init port input interrupt to call function home
-	exit_Init(GPIOB, GPIO_Pin_4, Trigger_Falling);
+	exit_Init(GPIOB, GPIO_Pin_4, Trigger_Rising);
 	//interrupt reverse
 	exit_Init(GPIOB, GPIO_Pin_5, Trigger_Falling);
 	exit_Init(GPIOB, GPIO_Pin_6, Trigger_Falling);
@@ -173,20 +173,20 @@ int main(void){
 	checkErrorJson[0] = 'O';
 	checkErrorJson[1] = 'K';
 	distanceJson = 20;
-	//GPIO_SetBits(GPIOA,MS1_Z);
-	//step_motor(GPIOA,StepZ,DirZ,CCW,60000,1600*10);
+	//GPIO_SetBits(GPIOA,StepX);
+	//step_motor(GPIOA,StepX,DirX,CCW,550,1600*100);
+	//step_motor(GPIOA,StepY,DirY,CCW,500,1600*100);
+	//step_motor(GPIOA,StepZ,DirZ,CCW,500,1600*100);
+	//step_motor(GPIOA,StepB,DirB,CCW,500,1600*100);
+	//home();
 	//GPIO_ResetBits(GPIOA,MS1_Z);
 	USART_Puts(USART1,"hello");
 	sendData();
-	
+	home();
+	take_water();
 	while(1)
 	{
-		if(flat_excute_json==1){
-//			call function cjson handler
-			cJSON_handler(RxBuffer);
-			//clear flat_excute_json
-			flat_excute_json = 0;		
-		}
+
 //		step_motor(GPIOA,StepY,DirY,CCW,Midium,800);
 //		step_motor(GPIOA,StepZ,DirZ,CCW,Midium,800);
 //		step_motor(GPIOA,StepX,DirX,CCW,Midium,800);
@@ -223,33 +223,33 @@ void home(void)
 {
 	// xoay cac dong co ve vi tri dat cong tat hanh trinh, neu dang o do thi khong can xoay dong co
 	// call function step and waiting interrupt Z-axis and pin of interrupt ==0
-	while(!interrupt_Z && GPIO_ReadInputDataBit(GPIOB,Exit_Z))
+	while(!interrupt_Z && !GPIO_ReadInputDataBit(GPIOB,Exit_Z))
 		{
-		step_motor(GPIOA,StepZ,DirZ,CCW,Midium,1);
+		step_motor(GPIOA,StepZ,DirZ,CW,Midium,1);
 		}
 	// clear flat interrupt Z-axis
 		interrupt_Z = 0;
 		
 	// call function step and waiting interrupt X-axis and pin of interrupt ==0
-	while(!interrupt_X && GPIO_ReadInputDataBit(GPIOB,Exit_X))
+	while(!interrupt_X && !GPIO_ReadInputDataBit(GPIOB,Exit_X))
 		{
-		step_motor(GPIOA,StepX,DirX,CCW,Fast,1);
+		step_motor(GPIOA,StepX,DirX,CCW,Midium,1);
 		}
 	// clear flat interrupt X-axis
 		interrupt_X = 0;
 		
 	// call function step and waiting interrupt Y-axis and pin of interrupt ==0
-	while(!interrupt_Y && GPIO_ReadInputDataBit(GPIOB,Exit_Y))
+	while(!interrupt_Y && !GPIO_ReadInputDataBit(GPIOB,Exit_Y))
 		{
-		step_motor(GPIOA,StepY,DirY,CCW,Fast,1);
+		step_motor(GPIOA,StepY,DirY,CCW,Midium,1);
 		}
 	// clear flat interrupt Y-axis
 		interrupt_Y = 0;
 		
 	// call function step and waiting interrupt B-axis and pin of interrupt ==0
-	while(!interrupt_B && GPIO_ReadInputDataBit(GPIOB,Exit_B))
+	while(!interrupt_B && !GPIO_ReadInputDataBit(GPIOB,Exit_B))
 		{
-		step_motor(GPIOA,StepB,DirB,CCW,Midium,1);
+		step_motor(GPIOA,StepB,DirB,CW,8000,1);
 		}
 	// clear flat interrupt B-axis
 		interrupt_B = 0;
@@ -297,37 +297,37 @@ void distance_pipet()
 void take_water(void)
 {
 	//run Y-axis, number_step = distance_Y,goto right
-	step_motor(GPIOA, StepY, DirY, CW, Fast, distance_Y);
+	step_motor(GPIOA, StepY, DirY, CW, Slow, distance_Y);
 	//add value to stepY_number
 	stepY_number += distance_Y;
 	
 	//run Z-axis, number_step=distance_Z1 goto part 1, run dowwn
-	step_motor(GPIOA, StepZ, DirZ, CW, Fast, distance_Z1);
+	step_motor(GPIOA, StepZ, DirZ, CCW, Slow, distance_Z1);
 	//add value to stepZ_number
 	stepZ_number += distance_Z1;
 	
 	// press pipet
-	step_motor(GPIOA, StepB, DirB, CW, Midium, distance_B);
+	step_motor(GPIOA, StepB, DirB, CCW, 7000, distance_B);
 	//add value to stepB_number
 	stepB_number += distance_B;
 	
 	//run Z-axis, number_step=distance_Z2 goto part 2, run down
-	step_motor(GPIOA, StepZ, DirZ, CW, Midium, distance_Z2);
+	step_motor(GPIOA, StepZ, DirZ, CCW, Slow, distance_Z2);
 	//add value to stepZ_number
 	stepZ_number += distance_Z2;
 	
 	//release pipet
-	step_motor(GPIOA, StepB, DirB, CCW,Midium,distance_B);
+	step_motor(GPIOA, StepB, DirB, CW,7000,distance_B);
 	//sub value to stepB_number
 	stepB_number -= distance_B;
 	
 	// run Z-axis, number_step = distance_Z2+distance_Z1, run up
-	step_motor(GPIOA, StepZ, DirZ, CCW, Fast,(distance_Z2+distance_Z1));
+	step_motor(GPIOA, StepZ, DirZ, CW, Slow,(distance_Z2+distance_Z1));
 	//sub value to stepZ_number
 	stepZ_number -= (distance_Z2 + distance_Z2);
 	
 	//run Y-axis, number_step = distance_Y, goto left
-	step_motor(GPIOA, StepY, DirY, CCW, Fast, distance_Y);
+	step_motor(GPIOA, StepY, DirY, CCW, Slow, distance_Y);
 	//sub value to stepY_number
 	stepY_number -= distance_Y;
 }
